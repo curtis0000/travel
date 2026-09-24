@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>行程</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f5efe4; --paper-2: #fbf7ef; --ink: #221f1a; --ink-2: #5d564c; --ink-3: #9a9184;
+    --line: #dcd3c3; --rail: #b8ad9a;
+    --seal: #c2442b; --seal-soft: #f6dcd4;
+    --move: #4f6f8f; --move-soft: #dfe7ee;
+    --warn-bg: #fff3c4; --warn-fg: #7a5a00; --warn-line: #e8cf6e;
+    --bad: #b3261e; --bad-soft: #f9dcd9;
+    --shadow: 0 1px 0 rgba(60,40,20,.06), 0 6px 18px -10px rgba(60,40,20,.25);
+    --dots: rgba(0,0,0,.035);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #17191d; --paper-2: #1f2228; --ink: #ece7dd; --ink-2: #b6afa3; --ink-3: #7b756b;
+      --line: #2e323a; --rail: #4a4f58;
+      --seal: #e0664d; --seal-soft: #3a2420;
+      --move: #8fb0d0; --move-soft: #24303c;
+      --warn-bg: #3a3116; --warn-fg: #f1d478; --warn-line: #5a4a1a;
+      --bad: #ff8a80; --bad-soft: #3d1f1d;
+      --shadow: 0 1px 0 rgba(0,0,0,.3), 0 8px 20px -12px rgba(0,0,0,.6);
+      --dots: rgba(255,255,255,.04);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font: 16px/1.65 "Noto Sans TC", "PingFang TC", "Hiragino Sans", sans-serif;
+    background-image: radial-gradient(var(--dots) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  a { color: var(--seal); text-underline-offset: 3px; }
+  main { max-width: 680px; margin: 0 auto; padding: 0 16px 80px; }
+  .mono { font-family: "DM Mono", ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
+  button { font: inherit; color: inherit; }
+
+  /* header */
+  header.hero { padding: 36px 0 20px; position: relative; }
+  .hero .kicker { font-family: "DM Mono", monospace; font-size: 12px; letter-spacing: .12em; color: var(--seal); text-transform: uppercase; }
+  .hero h1 { font-family: "Noto Serif TC", serif; font-weight: 700; font-size: 28px; line-height: 1.3; margin: 6px 0 10px; letter-spacing: .01em; padding-right: 56px; }
+  .hero .lede { color: var(--ink-2); font-size: 15px; margin: 0; }
+  .share {
+    position: absolute; right: 0; top: 34px; width: 44px; height: 44px; border-radius: 50%;
+    border: 1px solid var(--line); background: var(--paper-2); cursor: pointer; display: grid; place-items: center;
+    box-shadow: var(--shadow); color: var(--ink-2);
+  }
+  .share svg { width: 20px; height: 20px; }
+  .share:active { transform: scale(.94); }
+  .toast {
+    position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px); opacity: 0;
+    background: var(--ink); color: var(--paper); padding: 8px 16px; border-radius: 999px; font-size: 14px;
+    transition: .25s; pointer-events: none; z-index: 20;
+  }
+  .toast.on { opacity: 1; transform: translateX(-50%); }
+
+  /* tabs */
+  nav.tabs {
+    position: sticky; top: 0; z-index: 10; margin: 0 -16px; padding: 8px 16px 0;
+    background: color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none;
+  }
+  nav.tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: 0 0 auto; appearance: none; background: none; border: 0; cursor: pointer; color: var(--ink-3);
+    padding: 6px 12px 10px; border-bottom: 3px solid transparent; margin-bottom: -1px;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  }
+  .tab b { font-family: "DM Mono", monospace; font-weight: 500; font-size: 18px; letter-spacing: -.02em; line-height: 1.3; }
+  .tab small { font-size: 12px; line-height: 1.5; min-height: 18px; }
+  .tab.ov b { font-family: "Noto Serif TC", serif; font-weight: 700; font-size: 16px; }
+  .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--seal); }
+  .tab.today b::after { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--seal); margin-left: 4px; vertical-align: super; }
+
+  /* panels */
+  section.panel { display: none; padding-top: 22px; animation: rise .35s ease both; }
+  section.panel.active { display: block; }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .panel h2 { font-family: "Noto Serif TC", serif; font-size: 20px; margin: 0 0 14px; display: flex; align-items: baseline; gap: 10px; }
+  .panel h2 .ends { margin-left: auto; font: 12px "DM Mono", monospace; color: var(--ink-3); font-weight: 400; }
+
+  /* timeline */
+  ol.tl { list-style: none; margin: 0; padding: 0; }
+  .tl li { display: grid; grid-template-columns: 52px 22px 1fr; column-gap: 8px; position: relative; }
+  .tl .t { text-align: right; font-family: "DM Mono", monospace; font-variant-numeric: tabular-nums; line-height: 1.25; padding-top: 12px; }
+  .tl .t b { display: block; font-weight: 500; font-size: 15px; }
+  .tl .t span { display: block; font-size: 12px; color: var(--ink-3); }
+  .tl .rail { position: relative; }
+  .tl .rail::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--rail); }
+  .tl li:first-child .rail::before { top: 18px; }
+  .tl li:last-child .rail::before { bottom: auto; height: 18px; }
+  .tl .rail i { position: absolute; left: 50%; top: 14px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: var(--seal); border: 2px solid var(--paper); box-shadow: 0 0 0 2px var(--seal); }
+  .tl li.node .rail i { background: var(--paper); }
+
+  .tl li.stay { padding-bottom: 6px; }
+  .card {
+    background: var(--paper-2); border: 1px solid var(--line); border-left: 4px solid var(--seal);
+    border-radius: 8px; padding: 10px 12px; box-shadow: var(--shadow); margin: 6px 0;
+  }
+  .card .head { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
+  .card .head h3 { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.4; flex: 1; }
+  .card .dur { flex: 0 0 auto; font: 500 12px "DM Mono", monospace; color: var(--seal); background: var(--seal-soft); padding: 2px 7px; border-radius: 999px; margin-top: 2px; }
+  .card .map { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; color: var(--move); background: var(--move-soft); margin-top: -1px; }
+  .card .map svg { width: 15px; height: 15px; }
+  .card .chev { flex: 0 0 auto; width: 18px; height: 18px; margin-top: 3px; color: var(--ink-3); transition: transform .2s; transform-origin: center; }
+  .card.open .chev { transform: rotate(180deg); }
+  .card .note { display: none; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); color: var(--ink-2); font-size: 14.5px; overflow-wrap: anywhere; }
+  .card.open .note { display: block; }
+  .card.nonote .head { cursor: default; }
+
+  .tl li.node { padding: 4px 0; }
+  .tl li.node .t { padding-top: 8px; }
+  .tl li.node .rail i { top: 10px; }
+  .tl li.node .txt { padding: 6px 0; font-weight: 500; }
+  .tl li.node .txt .sub { display: block; font-weight: 400; color: var(--ink-2); font-size: 14px; }
+
+  .tl li.move .rail::before { background: repeating-linear-gradient(to bottom, var(--move) 0 4px, transparent 4px 8px); }
+  .tl li.move .txt { padding: 6px 0; font-size: 13.5px; color: var(--move); display: flex; gap: 6px; align-items: flex-start; }
+  .tl li.move .txt svg { flex: 0 0 auto; width: 16px; height: 16px; margin-top: 3px; }
+  .tl li.move .txt .min { font-family: "DM Mono", monospace; font-weight: 500; background: var(--move-soft); padding: 0 6px; border-radius: 4px; margin-left: 4px; white-space: nowrap; }
+
+  .tl li.gap .txt, .tl li.bad .txt { padding: 4px 0; font-size: 13px; }
+  .tl li.gap .txt { color: var(--ink-3); font-style: italic; }
+  .tl li.bad .txt { color: var(--bad); font-weight: 700; }
+  .tl li.bad .txt span { display: inline-block; background: var(--bad-soft); padding: 0 8px; border-radius: 4px; }
+  .tl li.bad .rail::before { background: var(--bad); }
+
+  .tl li.warn { grid-template-columns: 1fr; margin: 10px 0 6px; }
+  .callout { background: var(--warn-bg); color: var(--warn-fg); border: 1px solid var(--warn-line); border-radius: 8px; padding: 10px 12px 10px 40px; position: relative; font-size: 14.5px; }
+  .callout::before { content: "!"; position: absolute; left: 12px; top: 9px; width: 20px; height: 20px; border-radius: 50%; background: var(--warn-fg); color: var(--warn-bg); font: 700 13px/20px "DM Mono", monospace; text-align: center; }
+
+  ul.plain { margin: 14px 0 0; padding-left: 20px; color: var(--ink-2); }
+  ul.plain li { margin: 4px 0; }
+  .empty { color: var(--ink-3); font-style: italic; }
+
+  /* markdown blocks (總覽 + 其他段落) */
+  .doc { margin-top: 44px; padding-top: 24px; border-top: 2px solid var(--ink); }
+  .md h2 { font-family: "Noto Serif TC", serif; font-size: 20px; margin: 32px 0 10px; display: block; }
+  .md h2:first-child { margin-top: 0; }
+  .md p, .md li { color: var(--ink-2); font-size: 15px; }
+  .md p:first-child { margin-top: 0; }
+  .md table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  .md th, .md td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  .md th { font-weight: 700; color: var(--ink); }
+  .md li.task { list-style: none; margin-left: -20px; display: flex; gap: 10px; align-items: flex-start; padding: 4px 0; }
+  .md input[type=checkbox] { flex: 0 0 auto; width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--seal); cursor: pointer; }
+  .md li.task.done { color: var(--ink-3); text-decoration: line-through; }
+  @media (max-width: 600px) {
+    .md table, .md tbody, .md tr, .md td { display: block; }
+    .md thead { display: none; }
+    .md tr { background: var(--paper-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; margin: 8px 0; box-shadow: var(--shadow); }
+    .md td { border: 0; padding: 3px 0; display: grid; grid-template-columns: 5em 1fr; gap: 8px; }
+    .md td::before { content: attr(data-label); color: var(--ink-3); font-size: 12px; padding-top: 2px; }
+    .md td:first-child { font-weight: 700; color: var(--ink); }
+  }
+
+  /* list page */
+  .list a { display: block; padding: 18px 0; border-bottom: 1px solid var(--line); text-decoration: none; color: var(--ink); font-family: "Noto Serif TC", serif; font-size: 20px; }
+  .list small { display: block; font: 13px "DM Mono", monospace; color: var(--ink-3); margin-top: 2px; }
+  .err { color: var(--bad); }
+
+  @media print {
+    nav.tabs, .share { display: none; }
+    section.panel { display: block !important; break-inside: avoid; }
+    .card .note { display: block; }
+    body { background: #fff; }
+  }
+</style>
+</head>
+<body>
+<main id="app">載入中…</main>
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script>
+/* ---------- md → 結構 ---------- */
+const TIME_RE = /^(\d{1,2}):(\d{2})(?:\s*[–\-]\s*(\d{1,2}):(\d{2}))?\s+(.*)$/;
+const toMin = (h, m) => +h * 60 + +m;
+const fmt = min => {
+  const m = ((min % 1440) + 1440) % 1440;
+  return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+};
+const durLabel = m => m < 60 ? `${m} 分` : (m % 60 ? `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}` : `${m / 60}h`);
+const moveMinutes = s => {
+  let n = 0;
+  for (const x of s.matchAll(/(\d+(?:\.\d+)?)\s*小時/g)) n += Math.round(+x[1] * 60);
+  for (const x of s.matchAll(/(\d+)\s*分/g)) n += +x[1];
+  return n;
+};
+const inline = s => marked.parseInline(s.trim());
+const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function parseTrip(md) {
+  const lines = md.replace(/\r/g, '').split('\n');
+  const trip = { title: '行程', lede: '', overview: '', days: [], rest: '' };
+  let section = 'top', cur = null, lastItem = null;
+  const restBuf = [], ovBuf = [];
+  const flushDay = () => { if (cur) trip.days.push(cur); cur = null; lastItem = null; };
+  for (const raw of lines) {
+    if (/^#\s+/.test(raw)) { trip.title = raw.replace(/^#\s+/, '').trim(); continue; }
+    if (/^##\s+/.test(raw)) {
+      flushDay();
+      const h = raw.replace(/^##\s+/, '').trim();
+      section = h === '每日行程' ? 'days' : h === '行程總覽' ? 'overview' : 'rest';
+      if (section === 'rest') restBuf.push(raw);
+      continue;
+    }
+    if (section === 'top') { if (raw.trim()) trip.lede += (trip.lede ? '\n' : '') + raw.trim(); continue; }
+    if (section === 'rest') { restBuf.push(raw); continue; }
+    if (section === 'overview') { ovBuf.push(raw); continue; }
+    // ---- 每日行程 ----
+    if (/^###\s+/.test(raw)) { flushDay(); cur = { label: raw.replace(/^###\s+/, '').trim(), items: [] }; continue; }
+    if (!cur) continue;
+    const t = raw.trim();
+    if (!t) continue;
+    const isBullet = /^[-*]\s+/.test(t);
+    const isIndented = /^\s+/.test(raw) && !isBullet;
+    if (isIndented && lastItem) {
+      const body = t.replace(/^[→⇒>]\s*/, '');
+      if (/^[→⇒]/.test(t)) lastItem.move = { text: body, min: moveMinutes(body) };
+      else lastItem.note = (lastItem.note ? lastItem.note + ' ' : '') + t;
+      continue;
+    }
+    if (!isBullet) { cur.items.push({ kind: 'plain', text: t }); continue; }
+    const body = t.replace(/^[-*]\s+/, '');
+    lastItem = null;
+    if (/^\[[ xX]\]\s/.test(body)) { cur.items.push({ kind: 'task', done: /^\[[xX]\]/.test(body), text: body.slice(3).trim() }); continue; }
+    if (/^注意[：:]/.test(body)) { cur.items.push({ kind: 'warn', text: body.replace(/^注意[：:]\s*/, '') }); continue; }
+    const m = body.match(TIME_RE);
+    if (!m) { cur.items.push({ kind: 'plain', text: body }); continue; }
+    const start = toMin(m[1], m[2]);
+    let end = m[3] ? toMin(m[3], m[4]) : null;
+    if (end !== null && end < start) end += 1440;
+    const rest = m[5];
+    const ci = rest.indexOf('：');
+    const item = {
+      kind: end === null ? 'node' : 'stay', start, end,
+      name: ci >= 0 ? rest.slice(0, ci).trim() : rest.trim(),
+      note: ci >= 0 ? rest.slice(ci + 1).trim() : '',
+      move: null,
+    };
+    cur.items.push(item); lastItem = item;
+  }
+  flushDay();
+  trip.rest = restBuf.join('\n');
+  trip.overview = ovBuf.join('\n');
+  return trip;
+}
+
+/* ---------- 排程檢查：把 items 展開成時間軸列 ---------- */
+function schedule(items) {
+  const rows = [];
+  let cursor = null, dayEnd = null, pendingMove = null;
+  for (const it of items) {
+    if (it.kind === 'plain' || it.kind === 'warn' || it.kind === 'task') { rows.push(it); continue; }
+    let start = it.start, end = it.end;
+    if (cursor !== null && start < cursor - 720) { start += 1440; if (end !== null) end += 1440; }
+    if (pendingMove) rows.push({ kind: 'move', ...pendingMove });
+    if (cursor !== null) {
+      const gap = start - cursor;
+      if (gap < 0) rows.push({ kind: 'bad', min: -gap });
+      else if (gap > 0) rows.push({ kind: 'gap', min: gap });
+    }
+    rows.push({ ...it, start, end });
+    cursor = (end !== null ? end : start) + (it.move ? it.move.min : 0);
+    dayEnd = end !== null ? end : start;
+    pendingMove = it.move;
+  }
+  if (pendingMove) { rows.push({ kind: 'move', ...pendingMove }); dayEnd = cursor; }
+  return { rows, dayEnd };
+}
+
+/* ---------- render ---------- */
+const ICON_MOVE = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v12M4 10l4 4 4-4"/></svg>';
+const ICON_CHEV = '<svg class="chev" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l5 5 5-5"/></svg>';
+const ICON_PIN = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14.5s4.5-4.2 4.5-8a4.5 4.5 0 0 0-9 0c0 3.8 4.5 8 4.5 8z"/><circle cx="8" cy="6.5" r="1.6"/></svg>';
+const ICON_SHARE = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12V3M6.5 6.5L10 3l3.5 3.5"/><path d="M4 10v6a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-6"/></svg>';
+const mapUrl = name => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(name.replace(/<[^>]+>/g, ''));
+const taskHtml = (text, done, key) => `<li class="task${done ? ' done' : ''}"><input type="checkbox" data-key="${esc(key)}"${done ? ' checked' : ''}><span>${inline(text)}</span></li>`;
+
+function renderRow(r, dayIdx, i) {
+  switch (r.kind) {
+    case 'stay': {
+      const hasNote = !!r.note;
+      return `<li class="stay"><div class="t"><b>${fmt(r.start)}</b><span>${fmt(r.end)}</span></div><div class="rail"><i></i></div>
+        <div class="card${hasNote ? '' : ' nonote'}"><div class="head"><h3>${inline(r.name)}</h3><span class="dur">${durLabel(r.end - r.start)}</span>
+        <a class="map" href="${mapUrl(r.name)}" target="_blank" rel="noopener" aria-label="在 Google Maps 開啟" title="地圖">${ICON_PIN}</a>${hasNote ? ICON_CHEV : ''}</div>
+        ${hasNote ? `<div class="note">${inline(r.note)}</div>` : ''}</div></li>`;
+    }
+    case 'node':
+      return `<li class="node"><div class="t"><b>${fmt(r.start)}</b></div><div class="rail"><i></i></div>
+        <div class="txt">${inline(r.name)}${r.note ? `<span class="sub">${inline(r.note)}</span>` : ''}</div></li>`;
+    case 'move':
+      return `<li class="move"><div class="t"></div><div class="rail"></div>
+        <div class="txt">${ICON_MOVE}<span>${inline(r.text)}${r.min ? `<span class="min">${r.min} 分</span>` : ''}</span></div></li>`;
+    case 'gap':
+      return `<li class="gap"><div class="t"></div><div class="rail"></div><div class="txt">自由時間 ${durLabel(r.min)}</div></li>`;
+    case 'bad':
+      return `<li class="bad"><div class="t"></div><div class="rail"></div><div class="txt"><span>時間不夠，差 ${r.min} 分</span></div></li>`;
+    case 'warn':
+      return `<li class="warn"><div class="callout">${inline(r.text)}</div></li>`;
+    default: return '';
+  }
+}
+
+function renderDay(day, idx) {
+  const { rows, dayEnd } = schedule(day.items);
+  const timed = rows.filter(r => r.kind !== 'plain' && r.kind !== 'task');
+  const plain = rows.filter(r => r.kind === 'plain' || r.kind === 'task');
+  const ends = dayEnd !== null ? `<span class="ends">結束約 ${dayEnd >= 1440 ? '翌 ' : ''}${fmt(dayEnd)}</span>` : '';
+  const plainHtml = plain.map((p, i) => p.kind === 'task' ? taskHtml(p.text, p.done, `d${idx}:${p.text}`) : `<li>${inline(p.text)}</li>`).join('');
+  return `<section class="panel day md" id="d${idx}" data-idx="${idx}"><h2>${esc(day.label)}${ends}</h2>
+    ${timed.length ? `<ol class="tl">${timed.map(r => renderRow(r, idx)).join('')}</ol>` : (plain.length ? '' : '<p class="empty">這天還沒排行程</p>')}
+    ${plain.length ? `<ul class="plain">${plainHtml}</ul>` : ''}
+  </section>`;
+}
+
+function dayDates(trip) {
+  // 從標題抓年份，配合每天標籤的 月/日 推出日期；跨年時月份變小就 +1 年
+  const y = (trip.title.match(/(\d{4})\/\d{1,2}\/\d{1,2}/) || [])[1];
+  if (!y) return trip.days.map(() => null);
+  let year = +y, prevMonth = 0;
+  return trip.days.map(d => {
+    const m = d.label.match(/(\d{1,2})\/(\d{1,2})/);
+    if (!m) return null;
+    if (+m[1] < prevMonth) year++;
+    prevMonth = +m[1];
+    return `${year}-${String(m[1]).padStart(2, '0')}-${String(m[2]).padStart(2, '0')}`;
+  });
+}
+
+function renderTrip(trip) {
+  const dates = dayDates(trip);
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const todayIdx = dates.indexOf(todayStr);
+  const hasOv = !!trip.overview.trim();
+  const h = location.hash;
+  const hashIdx = +(h.match(/^#d(\d+)$/) || [])[1];
+  let active;
+  if (h === '#o' && hasOv) active = 'o';
+  else if (Number.isInteger(hashIdx) && trip.days[hashIdx]) active = String(hashIdx);
+  else if (todayIdx >= 0) active = String(todayIdx);
+  else active = hasOv ? 'o' : '0';
+  const range = (trip.title.match(/（(.+?)）\s*$/) || [])[1] || '';
+  const title = range ? trip.title.replace(/（.+?）\s*$/, '') : trip.title;
+
+  const tabs = (hasOv ? `<button class="tab ov" role="tab" aria-selected="${active === 'o'}" data-idx="o"><b>總覽</b><small></small></button>` : '') +
+    trip.days.map((d, i) => {
+      const m = d.label.match(/^(\d{1,2}\/\d{1,2})\s*[（(]?([^）)]*)[）)]?/);
+      const big = m ? m[1] : d.label, small = m ? m[2] : '';
+      return `<button class="tab${i === todayIdx ? ' today' : ''}" role="tab" aria-selected="${active === String(i)}" data-idx="${i}"><b>${esc(big)}</b><small>${esc(small)}</small></button>`;
+    }).join('');
+
+  return `<header class="hero"><div class="kicker mono">${esc(range)}</div><h1>${esc(title)}</h1>${trip.lede ? `<p class="lede">${inline(trip.lede)}</p>` : ''}
+      <button class="share" id="share" aria-label="分享" title="分享">${ICON_SHARE}</button></header>
+    ${trip.days.length || hasOv ? `<nav class="tabs" role="tablist">${tabs}</nav>` : ''}
+    ${hasOv ? `<section class="panel md" id="o" data-idx="o">${marked.parse(trip.overview)}</section>` : ''}
+    ${trip.days.map(renderDay).join('')}
+    ${trip.rest.trim() ? `<div class="doc md">${marked.parse(trip.rest)}</div>` : ''}`;
+}
+
+/* ---------- 互動 ---------- */
+const toast = msg => {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('on');
+  clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('on'), 1800);
+};
+
+function bind(app, tripId) {
+  // 分頁
+  const show = idx => {
+    app.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', t.dataset.idx === idx));
+    app.querySelectorAll('.panel').forEach(d => d.classList.toggle('active', d.dataset.idx === idx));
+    history.replaceState(null, '', idx === 'o' ? '#o' : `#d${idx}`);
+  };
+  app.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => show(t.dataset.idx)));
+  const first = app.querySelector('.tab[aria-selected="true"]');
+  if (first) show(first.dataset.idx);
+  window.addEventListener('hashchange', () => {
+    const idx = location.hash === '#o' ? 'o' : (location.hash.match(/^#d(\d+)$/) || [])[1];
+    if (idx !== undefined && app.querySelector(`.panel[data-idx="${idx}"]`)) show(idx);
+  });
+
+  // 色塊展開
+  app.querySelectorAll('.card:not(.nonote) .head').forEach(h => h.addEventListener('click', e => {
+    if (e.target.closest('a')) return;
+    h.parentElement.classList.toggle('open');
+  }));
+
+  // 表格 → 手機卡片用的欄名
+  app.querySelectorAll('.md table').forEach(tb => {
+    const heads = [...tb.querySelectorAll('thead th')].map(th => th.textContent.trim());
+    tb.querySelectorAll('tbody tr').forEach(tr => [...tr.children].forEach((td, i) => td.setAttribute('data-label', heads[i] || '')));
+  });
+
+  // 待辦：marked 產生的 disabled checkbox 改成可勾，狀態存 localStorage
+  const storeKey = `trip:${tripId}:tasks`;
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(storeKey) || '{}'); } catch (e) {}
+  app.querySelectorAll('.md li').forEach((li, i) => {
+    const cb = li.querySelector(':scope > input[type=checkbox]');
+    if (!cb) return;
+    li.classList.add('task');
+    cb.disabled = false;
+    if (!cb.dataset.key) cb.dataset.key = `r:${li.textContent.trim()}`;
+    if (!li.querySelector(':scope > span')) {
+      const span = document.createElement('span');
+      while (cb.nextSibling) span.appendChild(cb.nextSibling);
+      li.appendChild(span);
+    }
+  });
+  app.querySelectorAll('.md li.task input[type=checkbox]').forEach(cb => {
+    const key = cb.dataset.key;
+    if (key in saved) cb.checked = saved[key];
+    cb.closest('li').classList.toggle('done', cb.checked);
+    cb.addEventListener('change', () => {
+      saved[key] = cb.checked;
+      cb.closest('li').classList.toggle('done', cb.checked);
+      try { localStorage.setItem(storeKey, JSON.stringify(saved)); } catch (e) {}
+    });
+  });
+
+  // 分享
+  const share = document.getElementById('share');
+  if (share) share.addEventListener('click', async () => {
+    const url = location.href;
+    if (navigator.share) { try { await navigator.share({ title: document.title, url }); } catch (e) {} return; }
+    try { await navigator.clipboard.writeText(url); toast('已複製網址'); } catch (e) { toast('複製失敗，請手動複製網址'); }
+  });
+}
+
+/* ---------- main ---------- */
+(async () => {
+  const app = document.getElementById('app');
+  const id = new URLSearchParams(location.search).get('trip');
+  try {
+    if (!id) {
+      const trips = await (await fetch('trips/index.json')).json();
+      app.innerHTML = `<header class="hero"><div class="kicker mono">TRIPS</div><h1>行程</h1></header><div class="list">` +
+        trips.map(t => `<a href="?trip=${encodeURIComponent(t.id)}">${esc(t.title)}<small>${esc(t.dates)}</small></a>`).join('') + '</div>';
+      return;
+    }
+    const res = await fetch(`trips/${encodeURIComponent(id)}.md`);
+    if (!res.ok) throw new Error('找不到行程：' + id);
+    const trip = parseTrip(await res.text());
+    document.title = trip.title;
+    app.innerHTML = renderTrip(trip);
+    bind(app, id);
+  } catch (e) {
+    app.innerHTML = `<p class="err">${esc(e.message)}</p><p><a href="./">回行程列表</a></p>`;
+  }
+})();
+</script>
+</body>
+</html>
