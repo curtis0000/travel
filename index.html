@@ -144,6 +144,7 @@
 
   /* markdown blocks (總覽 + 其他段落) */
   .doc { margin-top: 44px; padding-top: 24px; border-top: 2px solid var(--ink); }
+  .doc.first { margin-top: 0; padding-top: 0; border-top: 0; }
   .md h2 { font-family: "Noto Serif TC", serif; font-size: 20px; margin: 32px 0 10px; display: block; }
   .md h2:first-child { margin-top: 0; }
   .md p, .md li { color: var(--ink-2); font-size: 15px; }
@@ -375,7 +376,7 @@ function renderTrip(trip) {
   const now = new Date();
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const todayIdx = dates.indexOf(todayStr);
-  const hasOv = !!trip.overview.trim();
+  const hasOv = !!(trip.overview.trim() || trip.rest.trim());
   const places = trip.days.flatMap((d, i) => d.items.filter(it => it.kind === 'stay').map(it => ({ name: it.name, day: (d.label.match(/^\d{1,2}\/\d{1,2}/) || [d.label])[0], dayIdx: i })));
   const h = location.hash;
   const hashIdx = +(h.match(/^#d(\d+)$/) || [])[1];
@@ -399,10 +400,9 @@ function renderTrip(trip) {
   return `<header class="hero"><div class="kicker mono">${esc(range)}</div><h1>${esc(title)}</h1>${trip.lede ? `<p class="lede">${inline(trip.lede)}</p>` : ''}
       <button class="share" id="share" aria-label="分享" title="分享">${ICON_SHARE}</button></header>
     ${trip.days.length || hasOv ? `<nav class="tabs" role="tablist">${tabs}</nav>` : ''}
-    ${hasOv ? `<section class="panel md" id="o" data-idx="o">${marked.parse(trip.overview)}</section>` : ''}
+    ${hasOv ? `<section class="panel md" id="o" data-idx="o">${marked.parse(trip.overview)}${trip.rest.trim() ? `<div class="doc${trip.overview.trim() ? '' : ' first'}">${marked.parse(trip.rest)}</div>` : ''}</section>` : ''}
     ${trip.days.map(renderDay).join('')}
-    ${places.length ? renderPlaces(places, trip.days) : ''}
-    ${trip.rest.trim() ? `<div class="doc md">${marked.parse(trip.rest)}</div>` : ''}`;
+    ${places.length ? renderPlaces(places, trip.days) : ''}`;
 }
 
 function renderPlaces(places, days) {
