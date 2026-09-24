@@ -4,194 +4,199 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>行程</title>
-<meta name="theme-color" content="#fbfaf7">
+<meta name="theme-color" content="#ffffff">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,600..800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
   :root {
     color-scheme: light;
-    --paper: #fbfaf7; --paper-2: #f3f0ea; --ink: #141210; --ink-2: #4a463f; --ink-3: #8a857b;
-    --hair: rgba(20,18,16,.14); --hair-2: rgba(20,18,16,.32);
-    --seal: #b8321f; --seal-soft: #f7e3de;
-    --move: #3d5a75; --move-soft: #e6ecf2;
-    --warn-bg: #fbf3d9; --warn-fg: #6b4e00;
-    --bad: #b8321f; --bad-soft: #f7e3de;
-    --serif: "Noto Serif TC", "Songti TC", serif;
-    --sans: "Noto Sans TC", "PingFang TC", "Hiragino Sans", sans-serif;
-    --mono: "DM Mono", ui-monospace, Menlo, monospace;
+    /* 雪影藍：雪地影子是藍紫色的。白紙＝雪，靛藍＝影子與夜空 */
+    --bg: #ffffff;
+    --ink: oklch(0.18 0.02 270);
+    --ink-2: oklch(0.42 0.02 270);
+    --ink-3: oklch(0.55 0.02 270);
+    --line: oklch(0.90 0.01 270);
+    --line-2: oklch(0.80 0.02 270);
+    --brand: oklch(0.44 0.15 270);
+    --brand-deep: oklch(0.32 0.14 270);
+    --brand-tint: oklch(0.96 0.03 270);
+    --brand-tint-2: oklch(0.92 0.05 270);
+    --warn-bg: oklch(0.97 0.05 90); --warn-fg: oklch(0.42 0.10 75); --warn-line: oklch(0.85 0.10 90);
+    --bad: oklch(0.52 0.20 25); --bad-tint: oklch(0.96 0.03 25);
+    --cjk: "Noto Sans TC", "PingFang TC", "Hiragino Sans", sans-serif;
+    --num: "Bricolage Grotesque", var(--cjk);
+    --z-sticky: 10; --z-toast: 30;
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
-  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.7 var(--sans); }
-  a { color: var(--seal); text-decoration-thickness: 1px; text-underline-offset: 3px; }
-  main { max-width: 680px; margin: 0 auto; padding: 0 20px 96px; }
-  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.65 var(--cjk); }
+  a { color: var(--brand); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  main { max-width: 640px; margin: 0 auto; padding: 0 18px 96px; }
   button { font: inherit; color: inherit; }
-  h1, h2, h3 { font-feature-settings: "palt"; }
-
-  /* masthead */
-  header.hero { padding: 28px 0 18px; border-bottom: 1px solid var(--ink); position: relative; }
-  header.hero::after { content: ""; display: block; position: absolute; left: 0; right: 0; bottom: -4px; border-bottom: 1px solid var(--ink); }
-  .hero .kicker { font: 500 11px/1 var(--mono); letter-spacing: .18em; color: var(--seal); text-transform: uppercase; display: flex; align-items: center; gap: 12px; padding-right: 96px; min-height: 36px; }
-  .hero .kicker::after { content: ""; flex: 1; border-top: 1px solid var(--hair-2); }
-  .hero h1 { font-family: var(--serif); font-weight: 700; font-size: 34px; line-height: 1.22; letter-spacing: -.005em; margin: 10px 0 8px; word-break: keep-all; overflow-wrap: anywhere; }
-  .hero .lede { color: var(--ink-2); font-size: 15px; margin: 0; }
-  .share {
-    position: absolute; right: 0; top: 28px; height: 36px; padding: 0 12px 0 10px; border-radius: 999px;
-    border: 1px solid var(--ink); background: transparent; cursor: pointer; display: flex; align-items: center; gap: 6px;
-    font: 500 12px var(--mono); letter-spacing: .08em; color: var(--ink);
+  h1, h2, h3 { text-wrap: balance; font-feature-settings: "palt"; }
+  .num, .t, .tab b, .dur, .min, .ord, .ends, .route-count, .list small, .hero .dates {
+    font-family: var(--num); font-variant-numeric: tabular-nums; font-variation-settings: "wdth" 88;
   }
-  .share svg { width: 16px; height: 16px; }
-  .share:active { background: var(--ink); color: var(--paper); }
+
+  /* header */
+  header.hero { padding: 22px 0 18px; display: grid; grid-template-columns: 1fr auto; column-gap: 12px; align-items: start; }
+  .hero .dates { grid-column: 1; font-weight: 700; font-size: 15px; color: var(--brand); letter-spacing: .01em; line-height: 1.2; }
+  .hero h1 { grid-column: 1; font-weight: 900; font-size: 30px; line-height: 1.25; margin: 6px 0 0; word-break: keep-all; overflow-wrap: anywhere; }
+  .hero .lede { grid-column: 1 / -1; color: var(--ink-2); font-size: 15px; margin: 10px 0 0; }
+  .share {
+    grid-column: 2; grid-row: 1 / 3; align-self: start; height: 40px; padding: 0 14px 0 12px; border-radius: 999px;
+    border: 0; background: var(--brand); color: #fff; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px;
+  }
+  .share svg { width: 17px; height: 17px; }
+  .share:active { background: var(--brand-deep); }
   .toast {
-    position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px); opacity: 0;
-    background: var(--ink); color: var(--paper); padding: 8px 16px; border-radius: 999px; font-size: 14px;
-    transition: .25s; pointer-events: none; z-index: 20;
+    position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px); opacity: 0; z-index: var(--z-toast);
+    background: var(--ink); color: #fff; padding: 8px 16px; border-radius: 999px; font-size: 14px; transition: .25s cubic-bezier(.16,1,.3,1); pointer-events: none;
   }
   .toast.on { opacity: 1; transform: translateX(-50%); }
 
-  /* section index (tabs) */
+  /* day tabs：像車站站名牌 */
   nav.tabs {
-    position: sticky; top: 0; z-index: 10; margin: 0 -20px; padding: 10px 20px 0;
-    background: rgba(251,250,247,.92); backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--hair);
-    display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none;
+    position: sticky; top: 0; z-index: var(--z-sticky); margin: 0 -18px; padding: 8px 18px;
+    background: rgba(255,255,255,.94); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line);
+    display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
   }
   nav.tabs::-webkit-scrollbar { display: none; }
   .tab {
-    flex: 0 0 auto; appearance: none; background: none; border: 0; cursor: pointer; color: var(--ink-3);
-    padding: 4px 10px 10px; border-bottom: 2px solid transparent; margin-bottom: -1px;
-    display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+    flex: 0 0 auto; appearance: none; border: 1.5px solid var(--line-2); background: #fff; cursor: pointer; color: var(--ink-2);
+    padding: 5px 12px 6px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; line-height: 1.15; min-width: 58px;
+    transition: background .15s, color .15s, border-color .15s;
   }
-  .tab b { font: 500 17px/1.3 var(--mono); letter-spacing: -.02em; }
-  .tab small { font-size: 11px; line-height: 1.5; min-height: 17px; letter-spacing: .04em; }
-  .tab.ov b { font-family: var(--serif); font-weight: 700; font-size: 15px; }
-  .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
-  .tab.today b::after { content: ""; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--seal); margin-left: 4px; vertical-align: super; }
+  .tab b { font-weight: 800; font-size: 17px; letter-spacing: -.01em; }
+  .tab small { font-size: 11px; margin-top: 2px; min-height: 13px; }
+  .tab.ov b { font-family: var(--cjk); font-weight: 900; font-size: 15px; }
+  .tab[aria-selected="true"] { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .tab.today:not([aria-selected="true"]) { border-color: var(--brand); color: var(--brand); }
 
   /* panels */
-  section.panel { display: none; padding-top: 26px; animation: rise .3s ease both; }
-  section.panel.active { display: block; }
-  @keyframes rise { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-  .panel h2 { font-family: var(--serif); font-size: 24px; line-height: 1.3; margin: 0 0 18px; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-  .panel h2 .folio { font: 500 11px var(--mono); letter-spacing: .18em; color: var(--seal); flex-basis: 100%; }
-  .panel h2 .ends { margin-left: auto; font: 12px var(--mono); color: var(--ink-3); font-weight: 400; letter-spacing: .04em; }
+  section.panel { display: none; padding-top: 22px; }
+  section.panel.active { display: block; animation: rise .35s cubic-bezier(.16,1,.3,1) both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { section.panel.active { animation: none; } .toast, .tab, .chev { transition: none; } }
+  .panel h2 { font-size: 22px; font-weight: 900; margin: 0 0 16px; display: flex; align-items: baseline; gap: 10px; }
+  .panel h2 .num { font-weight: 800; font-size: 34px; line-height: 1; color: var(--brand); letter-spacing: -.02em; }
+  .panel h2 .num small { font-size: 13px; font-weight: 700; margin-right: 2px; }
+  .panel h2 .ends { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--ink-3); }
 
-  /* timeline */
-  ol.tl { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--hair); }
-  .tl li { display: grid; grid-template-columns: 50px 18px 1fr; column-gap: 10px; position: relative; }
-  .tl .t { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; line-height: 1.25; padding-top: 14px; }
-  .tl .t b { display: block; font-weight: 500; font-size: 16px; }
-  .tl .t span { display: block; font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+  /* timeline：一天一條路線，一個地點一站 */
+  ol.tl { list-style: none; margin: 0; padding: 0; }
+  .tl li { display: grid; grid-template-columns: 54px 26px 1fr; column-gap: 8px; position: relative; }
+  .tl .t { text-align: right; line-height: 1.1; padding-top: 11px; }
+  .tl .t b { display: block; font-weight: 800; font-size: 17px; color: var(--brand-deep); letter-spacing: -.01em; }
+  .tl .t span { display: block; font-size: 12px; font-weight: 600; color: var(--ink-3); margin-top: 3px; }
   .tl .rail { position: relative; }
-  .tl .rail::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--hair-2); }
-  .tl li:first-child .rail::before { top: 20px; }
-  .tl li:last-child .rail::before { bottom: auto; height: 20px; }
-  .tl .rail i { position: absolute; left: 50%; top: 17px; width: 9px; height: 9px; margin-left: -4.5px; border-radius: 50%; background: var(--seal); }
-  .tl li.node .rail i { background: var(--paper); border: 1.5px solid var(--ink); }
+  .tl .rail::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 6px; margin-left: -3px; background: var(--brand); }
+  .tl li:first-child .rail::before { top: 16px; border-radius: 3px 3px 0 0; }
+  .tl li:last-child .rail::before { bottom: auto; height: 16px; border-radius: 0 0 3px 3px; }
+  .tl .rail i { position: absolute; left: 50%; top: 11px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: #fff; border: 4px solid var(--brand); }
+  .tl li.node .rail i { width: 12px; height: 12px; margin-left: -6px; top: 13px; border-width: 3px; }
 
-  .tl li.stay { padding: 8px 0 10px; border-bottom: 1px solid var(--hair); }
-  .card { padding: 4px 0 2px; }
-  .card .head { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
-  .card .head h3 { margin: 0; font-family: var(--serif); font-size: 18px; font-weight: 700; line-height: 1.4; flex: 1; }
-  .card .dur { flex: 0 0 auto; font: 500 12px var(--mono); color: var(--seal); letter-spacing: .04em; margin-top: 5px; }
-  .card .map { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: var(--ink); border: 1px solid var(--hair-2); margin-top: 1px; }
-  .card .map svg { width: 14px; height: 14px; }
+  .tl li.stay { padding: 6px 0 10px; }
+  .card { padding: 2px 0 0; }
+  .card .head { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
+  .card .head h3 { margin: 0; font-size: 17px; font-weight: 800; line-height: 1.4; flex: 1; }
+  .card .dur { flex: 0 0 auto; font-weight: 700; font-size: 12px; color: var(--brand); background: var(--brand-tint); padding: 3px 8px; border-radius: 999px; margin-top: 3px; }
+  .card .map { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: var(--brand); background: var(--brand-tint); }
+  .card .map:active { background: var(--brand-tint-2); }
+  .card .map svg { width: 15px; height: 15px; }
   .card .chev { flex: 0 0 auto; width: 18px; height: 18px; margin-top: 6px; color: var(--ink-3); transition: transform .2s; transform-origin: center; }
   .card.open .chev { transform: rotate(180deg); }
-  .card .note { display: none; margin-top: 8px; color: var(--ink-2); font-size: 14.5px; line-height: 1.7; overflow-wrap: anywhere; }
+  .card .note { display: none; margin-top: 8px; padding: 10px 12px; background: var(--brand-tint); border-radius: 10px; color: var(--ink-2); font-size: 14.5px; line-height: 1.7; overflow-wrap: anywhere; }
   .card.open .note { display: block; }
   .card.nonote .head { cursor: default; }
 
-  .tl li.node { padding: 6px 0; }
-  .tl li.node .t { padding-top: 10px; }
-  .tl li.node .rail i { top: 15px; }
-  .tl li.node .txt { padding: 8px 0; font-weight: 500; }
+  .tl li.node { padding: 4px 0; }
+  .tl li.node .t { padding-top: 9px; }
+  .tl li.node .txt { padding: 6px 0; font-weight: 700; }
   .tl li.node .txt .sub { display: block; font-weight: 400; color: var(--ink-2); font-size: 14px; }
 
-  .tl li.move .rail::before { background: repeating-linear-gradient(to bottom, var(--hair-2) 0 3px, transparent 3px 7px); }
-  .tl li.move .txt { padding: 7px 0; font-size: 13.5px; color: var(--ink-2); display: flex; gap: 6px; align-items: flex-start; }
-  .tl li.move .txt svg { flex: 0 0 auto; width: 14px; height: 14px; margin-top: 4px; color: var(--ink-3); }
-  .tl li.move .txt .min { font: 500 12px var(--mono); color: var(--ink); border: 1px solid var(--hair-2); padding: 0 6px; border-radius: 3px; margin-left: 6px; white-space: nowrap; }
+  .tl li.move .txt { padding: 6px 0 8px; font-size: 13.5px; color: var(--ink-2); display: flex; gap: 6px; align-items: flex-start; }
+  .tl li.move .txt svg { flex: 0 0 auto; width: 14px; height: 14px; margin-top: 4px; color: var(--brand); }
+  .tl li.move .txt .min { font-weight: 700; font-size: 12px; color: var(--brand-deep); background: var(--brand-tint); padding: 1px 7px; border-radius: 999px; margin-left: 6px; white-space: nowrap; }
 
-  .tl li.gap .txt, .tl li.bad .txt { padding: 5px 0; font-size: 12.5px; letter-spacing: .02em; }
-  .tl li.gap .txt { color: var(--ink-3); font-style: italic; }
-  .tl li.bad .txt { color: var(--bad); font-weight: 700; }
-  .tl li.bad .txt span { border-bottom: 2px solid var(--bad); }
-  .tl li.bad .rail::before { background: var(--bad); width: 2px; }
+  .tl li.gap .rail::before { background: repeating-linear-gradient(to bottom, var(--brand) 0 6px, transparent 6px 12px); }
+  .tl li.gap .txt, .tl li.bad .txt { padding: 4px 0; font-size: 12.5px; }
+  .tl li.gap .txt { color: var(--ink-3); }
+  .tl li.bad .rail::before { background: var(--bad); }
+  .tl li.bad .txt { color: var(--bad); font-weight: 800; }
+  .tl li.bad .txt span { background: var(--bad-tint); padding: 1px 8px; border-radius: 999px; }
 
-  .tl li.warn { grid-template-columns: 1fr; margin: 14px 0 8px; }
-  .callout { border-left: 3px solid var(--seal); padding: 2px 0 2px 14px; font-size: 14.5px; color: var(--ink-2); }
-  .callout::before { content: "NOTE"; display: block; font: 500 10px var(--mono); letter-spacing: .18em; color: var(--seal); margin-bottom: 2px; }
+  .tl li.warn { grid-template-columns: 1fr; margin: 12px 0 6px; }
+  .callout { background: var(--warn-bg); border: 1px solid var(--warn-line); color: var(--warn-fg); border-radius: 12px; padding: 10px 12px; font-size: 14.5px; display: flex; gap: 10px; }
+  .callout::before { content: "注意"; flex: 0 0 auto; font-weight: 800; }
 
-  ul.plain { margin: 16px 0 0; padding-left: 20px; color: var(--ink-2); }
+  ul.plain { margin: 14px 0 0; padding-left: 20px; color: var(--ink-2); }
   ul.plain li { margin: 4px 0; }
-  .empty { color: var(--ink-3); font-style: italic; }
+  .empty { color: var(--ink-3); }
 
-  /* markdown blocks (總覽) */
-  .doc { margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--ink); }
-  .doc.first { margin-top: 0; padding-top: 0; border-top: 0; }
-  #o h2 { font-family: var(--serif); font-size: 21px; margin: 36px 0 12px; display: block; }
+  /* 總覽 */
+  .doc { margin-top: 36px; }
+  .doc.first { margin-top: 0; }
+  #o h2 { font-size: 20px; font-weight: 900; margin: 34px 0 10px; display: block; }
   #o h2:first-child { margin-top: 0; }
+  #o > p:first-child { font-size: 17px; line-height: 1.75; color: var(--ink); font-weight: 500; }
   .md p, .md li { color: var(--ink-2); font-size: 15px; }
-  .md > p:first-child, #o > p:first-child { font-family: var(--serif); font-size: 17px; line-height: 1.75; color: var(--ink); }
   .md table { border-collapse: collapse; width: 100%; font-size: 14px; }
-  .md th, .md td { border-bottom: 1px solid var(--hair); padding: 8px 8px 8px 0; text-align: left; vertical-align: top; }
-  .md th { font: 500 11px var(--mono); letter-spacing: .12em; color: var(--ink-3); text-transform: uppercase; border-bottom-color: var(--ink); }
-  .md li.task { list-style: none; margin-left: -20px; display: flex; gap: 12px; align-items: flex-start; padding: 6px 0; border-bottom: 1px solid var(--hair); }
-  .md input[type=checkbox] { flex: 0 0 auto; width: 20px; height: 20px; margin: 3px 0 0; accent-color: var(--ink); cursor: pointer; }
+  .md th, .md td { border-bottom: 1px solid var(--line); padding: 8px 8px 8px 0; text-align: left; vertical-align: top; }
+  .md th { font-weight: 800; color: var(--ink); border-bottom: 2px solid var(--ink); }
+  .md li.task { list-style: none; margin-left: -20px; display: flex; gap: 12px; align-items: flex-start; padding: 7px 0; border-bottom: 1px solid var(--line); }
+  .md input[type=checkbox] { flex: 0 0 auto; width: 20px; height: 20px; margin: 3px 0 0; accent-color: var(--brand); cursor: pointer; }
   .md li.task.done { color: var(--ink-3); text-decoration: line-through; }
   @media (max-width: 600px) {
     .md table, .md tbody, .md tr, .md td { display: block; }
     .md thead { display: none; }
-    .md tr { border-bottom: 1px solid var(--hair); padding: 10px 0; }
-    .md td { border: 0; padding: 2px 0; display: grid; grid-template-columns: 5em 1fr; gap: 8px; }
-    .md td::before { content: attr(data-label); font: 500 10px var(--mono); letter-spacing: .12em; color: var(--ink-3); padding-top: 5px; text-transform: uppercase; }
-    .md td:first-child { font-weight: 700; color: var(--ink); }
+    .md tr { border-bottom: 1px solid var(--line); padding: 10px 0; }
+    .md td { border: 0; padding: 2px 0; display: grid; grid-template-columns: 4.5em 1fr; gap: 8px; }
+    .md td::before { content: attr(data-label); font-size: 13px; font-weight: 700; color: var(--ink-3); }
+    .md td:first-child { font-weight: 800; color: var(--ink); }
   }
 
   /* 地點路線工具 */
-  .places-intro { color: var(--ink-2); font-size: 14.5px; margin: 0 0 8px; }
-  .pgroup { margin: 22px 0 4px; font: 500 11px var(--mono); color: var(--seal); letter-spacing: .18em; }
-  ul.places { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ink); }
-  ul.places li { border-bottom: 1px solid var(--hair); }
-  ul.places label { display: flex; align-items: center; gap: 14px; padding: 11px 2px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .places-intro { color: var(--ink-2); font-size: 14.5px; margin: 0 0 6px; }
+  .pgroup { margin: 20px 0 2px; font-weight: 800; font-size: 14px; color: var(--brand); display: flex; align-items: center; gap: 8px; }
+  ul.places { list-style: none; margin: 0; padding: 0; }
+  ul.places li { border-bottom: 1px solid var(--line); }
+  ul.places label { display: flex; align-items: center; gap: 14px; padding: 10px 2px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   ul.places input { position: absolute; opacity: 0; width: 0; height: 0; }
   ul.places .ord {
-    flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--hair-2);
-    display: grid; place-items: center; font: 500 13px var(--mono); color: transparent; transition: .15s;
+    flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--line-2);
+    display: grid; place-items: center; font-weight: 800; font-size: 14px; color: transparent; transition: .15s;
   }
-  ul.places input:checked ~ .ord { background: var(--ink); border-color: var(--ink); color: var(--paper); }
-  ul.places .pname { flex: 1; font-family: var(--serif); font-weight: 700; font-size: 16px; }
-  ul.places input:checked ~ .pname { color: var(--seal); }
+  ul.places input:checked ~ .ord { background: var(--brand); border-color: var(--brand); color: #fff; }
+  ul.places .pname { flex: 1; font-weight: 700; font-size: 16px; }
+  ul.places input:checked ~ .pname { color: var(--brand-deep); }
   .route-bar {
-    position: sticky; bottom: 0; margin: 24px -20px 0; padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
-    background: rgba(251,250,247,.94); backdrop-filter: blur(10px); border-top: 1px solid var(--ink);
+    position: sticky; bottom: 0; margin: 20px -18px 0; padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+    background: rgba(255,255,255,.94); backdrop-filter: blur(10px); border-top: 1px solid var(--line);
   }
-  .modes { display: flex; gap: 0; margin-bottom: 10px; border: 1px solid var(--ink); border-radius: 999px; overflow: hidden; }
-  .modes label { flex: 1; text-align: center; font-size: 13px; padding: 7px 0; cursor: pointer; color: var(--ink-2); }
-  .modes label + label { border-left: 1px solid var(--ink); }
+  .modes { display: flex; gap: 6px; margin-bottom: 10px; }
+  .modes label { flex: 1; text-align: center; font-size: 13px; font-weight: 600; padding: 7px 0; cursor: pointer; color: var(--ink-2); border: 1.5px solid var(--line-2); border-radius: 999px; }
   .modes input { position: absolute; opacity: 0; width: 0; height: 0; }
-  .modes label:has(input:checked) { background: var(--ink); color: var(--paper); }
+  .modes label:has(input:checked) { background: var(--brand-tint-2); border-color: var(--brand); color: var(--brand-deep); }
   .route-actions { display: flex; gap: 8px; align-items: center; }
   .btn-go {
-    flex: 1; border: 0; border-radius: 999px; padding: 13px 16px; background: var(--seal); color: #fff; font-weight: 700; cursor: pointer;
+    flex: 1; border: 0; border-radius: 999px; padding: 13px 16px; background: var(--brand); color: #fff; font-weight: 800; cursor: pointer;
     display: flex; align-items: center; justify-content: center; gap: 8px;
   }
   .btn-go svg { width: 18px; height: 18px; }
-  .btn-go:disabled { background: var(--paper-2); color: var(--ink-3); cursor: default; }
-  .btn-clear { border: 1px solid var(--hair-2); background: transparent; border-radius: 999px; padding: 13px 16px; cursor: pointer; color: var(--ink-2); }
-  .route-count { font: 12px var(--mono); color: var(--ink-3); margin-top: 8px; text-align: center; letter-spacing: .04em; }
+  .btn-go:disabled { background: var(--line); color: var(--ink-3); cursor: default; }
+  .btn-clear { border: 1.5px solid var(--line-2); background: #fff; border-radius: 999px; padding: 12px 16px; cursor: pointer; color: var(--ink-2); font-weight: 600; }
+  .route-count { font-size: 12px; font-weight: 600; color: var(--ink-3); margin-top: 8px; text-align: center; }
 
   /* list page */
-  .list { border-top: 1px solid var(--ink); margin-top: 24px; }
-  .list a { display: block; padding: 20px 0; border-bottom: 1px solid var(--hair); text-decoration: none; color: var(--ink); font-family: var(--serif); font-size: 22px; font-weight: 700; }
-  .list small { display: block; font: 12px var(--mono); color: var(--ink-3); margin-top: 4px; letter-spacing: .06em; }
+  .list { margin-top: 12px; }
+  .list a { display: block; padding: 18px 0; border-bottom: 1px solid var(--line); text-decoration: none; color: var(--ink); font-size: 20px; font-weight: 800; }
+  .list small { display: block; font-size: 13px; font-weight: 700; color: var(--brand); margin-top: 4px; }
   .err { color: var(--bad); }
 
   @media print {
-    nav.tabs, .share { display: none; }
+    nav.tabs, .share, .route-bar { display: none; }
     section.panel { display: block !important; break-inside: avoid; }
     .card .note { display: block; }
   }
@@ -338,7 +343,7 @@ function renderDay(day, idx) {
   const plain = rows.filter(r => r.kind === 'plain' || r.kind === 'task');
   const ends = dayEnd !== null ? `<span class="ends">結束約 ${dayEnd >= 1440 ? '翌 ' : ''}${fmt(dayEnd)}</span>` : '';
   const plainHtml = plain.map((p, i) => p.kind === 'task' ? taskHtml(p.text, p.done, `d${idx}:${p.text}`) : `<li>${inline(p.text)}</li>`).join('');
-  return `<section class="panel day md" id="d${idx}" data-idx="${idx}"><h2><span class="folio">DAY ${String(idx + 1).padStart(2, '0')}</span>${esc(day.label)}${ends}</h2>
+  return `<section class="panel day md" id="d${idx}" data-idx="${idx}"><h2><span class="num"><small>Day</small>${idx + 1}</span>${esc(day.label)}${ends}</h2>
     ${timed.length ? `<ol class="tl">${timed.map(r => renderRow(r, idx)).join('')}</ol>` : (plain.length ? '' : '<p class="empty">這天還沒排行程</p>')}
     ${plain.length ? `<ul class="plain">${plainHtml}</ul>` : ''}
   </section>`;
@@ -384,8 +389,8 @@ function renderTrip(trip) {
     }).join('') +
     (places.length ? `<button class="tab ov" role="tab" aria-selected="${active === 'p'}" data-idx="p"><b>地點</b><small></small></button>` : '');
 
-  return `<header class="hero"><div class="kicker mono">${esc(range)}</div><h1>${esc(title)}</h1>${trip.lede ? `<p class="lede">${inline(trip.lede)}</p>` : ''}
-      <button class="share" id="share" aria-label="分享" title="分享">${ICON_SHARE}<span>SHARE</span></button></header>
+  return `<header class="hero"><div class="dates">${esc(range)}</div><h1>${esc(title)}</h1>${trip.lede ? `<p class="lede">${inline(trip.lede)}</p>` : ''}
+      <button class="share" id="share" aria-label="分享" title="分享">${ICON_SHARE}<span>分享</span></button></header>
     ${trip.days.length || hasOv ? `<nav class="tabs" role="tablist">${tabs}</nav>` : ''}
     ${hasOv ? `<section class="panel md" id="o" data-idx="o">${marked.parse(trip.overview)}${trip.rest.trim() ? `<div class="doc${trip.overview.trim() ? '' : ' first'}">${marked.parse(trip.rest)}</div>` : ''}</section>` : ''}
     ${trip.days.map(renderDay).join('')}
@@ -396,10 +401,10 @@ function renderPlaces(places, days) {
   const groups = days.map((d, i) => {
     const ps = places.filter(p => p.dayIdx === i);
     if (!ps.length) return '';
-    return `<div class="pgroup">DAY ${String(i + 1).padStart(2, '0')} · ${esc(d.label)}</div><ul class="places">${ps.map(p =>
+    return `<div class="pgroup">Day ${i + 1}<span>${esc(d.label)}</span></div><ul class="places">${ps.map(p =>
       `<li><label><input type="checkbox" data-name="${esc(p.name)}"><span class="ord"></span><span class="pname">${inline(p.name)}</span></label></li>`).join('')}</ul>`;
   }).join('');
-  return `<section class="panel md" id="p" data-idx="p"><h2><span class="folio">ROUTE</span>地點路線</h2>
+  return `<section class="panel md" id="p" data-idx="p"><h2>地點路線</h2>
     <p class="places-intro">照你想走的順序依次點選地點，再按下方按鈕，Google Maps 會照這個順序畫出路線。</p>
     ${groups}
     <div class="route-bar">
@@ -409,7 +414,7 @@ function renderPlaces(places, days) {
         <label><input type="radio" name="mode" value="driving">開車</label>
       </div>
       <div class="route-actions">
-        <button class="btn-go" id="route-go" disabled>${ICON_PIN}<span>在 Google Maps 開啟路線</span></button>
+        <button class="btn-go" id="route-go" disabled>${ICON_PIN}<span>Google Maps 開路線</span></button>
         <button class="btn-clear" id="route-clear">清除</button>
       </div>
       <div class="route-count" id="route-count">還沒選地點</div>
@@ -524,7 +529,7 @@ function bind(app, tripId) {
   try {
     if (!id) {
       const trips = await (await fetch('trips/index.json')).json();
-      app.innerHTML = `<header class="hero"><div class="kicker mono">TRIPS</div><h1>行程</h1></header><div class="list">` +
+      app.innerHTML = `<header class="hero"><h1>行程</h1></header><div class="list">` +
         trips.map(t => `<a href="?trip=${encodeURIComponent(t.id)}">${esc(t.title)}<small>${esc(t.dates)}</small></a>`).join('') + '</div>';
       return;
     }
