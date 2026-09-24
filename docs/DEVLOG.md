@@ -23,3 +23,10 @@
 - 表格轉卡片用 CSS + data-label 而非改寫 marked 輸出：marked 的 HTML 原封不動，之後升級不會壞。
 - 地圖搜尋字串直接用地點名，不加城市：跨城市行程（東京＋越後湯澤）加了反而搜錯。
 - 坑：測淺色模式時 document.styleSheets[0] 是 Google Fonts 的跨域樣式表，讀 cssRules 會丟 SecurityError；要抓 head 裡自己的 style。
+
+## 2026-09-24 上線 + 地點路線工具
+
+- 部署用 gh repo create --push + gh api 開 Pages，不用 Actions：純靜態檔，main 分支根目錄直接服務，加 .nojekyll 避免 Jekyll 處理。
+- 路線用 Google Maps Directions URL（api=1）而非嵌入地圖：不用 API key、手機會直接跳 Google Maps app。限制是最多 10 點，且大眾運輸模式不吃中途點。
+- 地點只從時間軸的停留項目抓，不掃全文：全文找地名要靠猜，寧可少列也不列錯；沒排時間的餐廳等排進時間軸再出現。
+- 地點勾選順序不存 localStorage：每次規劃路線都是新的組合，存了反而要先清。

@@ -13,7 +13,7 @@ Markdown 是唯一的內容來源。以後新增行程 = 丟一個 md 進 `trips
 - 純前端單檔 `index.html`（HTML + CSS + JS 全在裡面），無 build 工具、無框架
 - Markdown 解析：`marked`（jsDelivr CDN）；行程結構（天數、時間軸）由自己的 parser 從 md 文字抽出
 - 部署：GitHub Pages，repo `curtis0000/travel`（公開），網址 `https://curtis0000.github.io/travel/?trip=<id>`
-- 本機預覽：`python3 -m http.server 8000` 後開 `http://localhost:8000/`（fetch md 需要 http，直接開檔案不行）
+- 本機預覽：`python3 -m http.server 9100` 後開 `http://localhost:9100/`（fetch md 需要 http，直接開檔案不行；8000 被別的專案占用）
 
 ## 核心原則（不可違反）
 
@@ -51,6 +51,7 @@ Markdown 是唯一的內容來源。以後新增行程 = 丟一個 md 進 `trips
 - 停留色塊：地點名、時長、地圖按鈕（開 Google Maps 搜尋地點名）、有備註才有展開箭頭
 - 「行程總覽」「每日行程」以外的 H2 段落（購物清單、餐廳、待辦）放在所有分頁之後，照一般 Markdown 顯示，每個分頁都看得到
 - 表格在 ≤600px 改成卡片（欄名 → 每列的標籤）
+- 「地點」分頁（最後一個）：列出時間軸所有停留地點，照點選順序編號，按鈕用 Google Maps Directions URL 開路線（origin／waypoints／destination，最多 10 點，可選步行／大眾運輸／開車）。勾選不存檔，離開頁面就清空
 - 支援深色模式（跟系統）、列印時展開所有天
 
 ## 範圍邊界

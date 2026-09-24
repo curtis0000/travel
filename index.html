@@ -163,6 +163,39 @@
     .md td:first-child { font-weight: 700; color: var(--ink); }
   }
 
+  /* 地點路線工具 */
+  .places-intro { color: var(--ink-2); font-size: 14.5px; margin: 0 0 16px; }
+  .pgroup { margin: 18px 0 6px; font: 500 13px "DM Mono", monospace; color: var(--ink-3); letter-spacing: .06em; }
+  ul.places { list-style: none; margin: 0; padding: 0; }
+  ul.places li { border-bottom: 1px solid var(--line); }
+  ul.places label { display: flex; align-items: center; gap: 12px; padding: 10px 4px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  ul.places input { position: absolute; opacity: 0; width: 0; height: 0; }
+  ul.places .ord {
+    flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--line);
+    display: grid; place-items: center; font: 500 13px "DM Mono", monospace; color: transparent; transition: .15s;
+  }
+  ul.places input:checked ~ .ord { background: var(--seal); border-color: var(--seal); color: #fff; }
+  ul.places .pname { flex: 1; font-weight: 500; }
+  ul.places input:checked ~ .pname { color: var(--seal); }
+  ul.places .pday { font: 12px "DM Mono", monospace; color: var(--ink-3); }
+  .route-bar {
+    position: sticky; bottom: 0; margin: 20px -16px 0; padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter: blur(10px); border-top: 1px solid var(--line);
+  }
+  .modes { display: flex; gap: 6px; margin-bottom: 10px; }
+  .modes label { flex: 1; text-align: center; font-size: 13px; padding: 6px 0; border: 1px solid var(--line); border-radius: 999px; cursor: pointer; color: var(--ink-2); background: var(--paper-2); }
+  .modes input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .modes label:has(input:checked) { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .route-actions { display: flex; gap: 8px; align-items: center; }
+  .btn-go {
+    flex: 1; border: 0; border-radius: 10px; padding: 12px 16px; background: var(--seal); color: #fff; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-go svg { width: 18px; height: 18px; }
+  .btn-go:disabled { background: var(--line); color: var(--ink-3); cursor: default; }
+  .btn-clear { border: 1px solid var(--line); background: var(--paper-2); border-radius: 10px; padding: 12px 14px; cursor: pointer; color: var(--ink-2); }
+  .route-count { font: 12px "DM Mono", monospace; color: var(--ink-3); margin-top: 8px; text-align: center; }
+
   /* list page */
   .list a { display: block; padding: 18px 0; border-bottom: 1px solid var(--line); text-decoration: none; color: var(--ink); font-family: "Noto Serif TC", serif; font-size: 20px; }
   .list small { display: block; font: 13px "DM Mono", monospace; color: var(--ink-3); margin-top: 2px; }
@@ -343,10 +376,12 @@ function renderTrip(trip) {
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const todayIdx = dates.indexOf(todayStr);
   const hasOv = !!trip.overview.trim();
+  const places = trip.days.flatMap((d, i) => d.items.filter(it => it.kind === 'stay').map(it => ({ name: it.name, day: (d.label.match(/^\d{1,2}\/\d{1,2}/) || [d.label])[0], dayIdx: i })));
   const h = location.hash;
   const hashIdx = +(h.match(/^#d(\d+)$/) || [])[1];
   let active;
   if (h === '#o' && hasOv) active = 'o';
+  else if (h === '#p' && places.length) active = 'p';
   else if (Number.isInteger(hashIdx) && trip.days[hashIdx]) active = String(hashIdx);
   else if (todayIdx >= 0) active = String(todayIdx);
   else active = hasOv ? 'o' : '0';
@@ -358,14 +393,41 @@ function renderTrip(trip) {
       const m = d.label.match(/^(\d{1,2}\/\d{1,2})\s*[（(]?([^）)]*)[）)]?/);
       const big = m ? m[1] : d.label, small = m ? m[2] : '';
       return `<button class="tab${i === todayIdx ? ' today' : ''}" role="tab" aria-selected="${active === String(i)}" data-idx="${i}"><b>${esc(big)}</b><small>${esc(small)}</small></button>`;
-    }).join('');
+    }).join('') +
+    (places.length ? `<button class="tab ov" role="tab" aria-selected="${active === 'p'}" data-idx="p"><b>地點</b><small></small></button>` : '');
 
   return `<header class="hero"><div class="kicker mono">${esc(range)}</div><h1>${esc(title)}</h1>${trip.lede ? `<p class="lede">${inline(trip.lede)}</p>` : ''}
       <button class="share" id="share" aria-label="分享" title="分享">${ICON_SHARE}</button></header>
     ${trip.days.length || hasOv ? `<nav class="tabs" role="tablist">${tabs}</nav>` : ''}
     ${hasOv ? `<section class="panel md" id="o" data-idx="o">${marked.parse(trip.overview)}</section>` : ''}
     ${trip.days.map(renderDay).join('')}
+    ${places.length ? renderPlaces(places, trip.days) : ''}
     ${trip.rest.trim() ? `<div class="doc md">${marked.parse(trip.rest)}</div>` : ''}`;
+}
+
+function renderPlaces(places, days) {
+  const groups = days.map((d, i) => {
+    const ps = places.filter(p => p.dayIdx === i);
+    if (!ps.length) return '';
+    return `<div class="pgroup">${esc(d.label)}</div><ul class="places">${ps.map(p =>
+      `<li><label><input type="checkbox" data-name="${esc(p.name)}"><span class="ord"></span><span class="pname">${inline(p.name)}</span></label></li>`).join('')}</ul>`;
+  }).join('');
+  return `<section class="panel md" id="p" data-idx="p"><h2>地點路線</h2>
+    <p class="places-intro">照你想走的順序依次點選地點，再按下方按鈕，Google Maps 會照這個順序畫出路線。</p>
+    ${groups}
+    <div class="route-bar">
+      <div class="modes">
+        <label><input type="radio" name="mode" value="walking" checked>步行</label>
+        <label><input type="radio" name="mode" value="transit">大眾運輸</label>
+        <label><input type="radio" name="mode" value="driving">開車</label>
+      </div>
+      <div class="route-actions">
+        <button class="btn-go" id="route-go" disabled>${ICON_PIN}<span>在 Google Maps 開啟路線</span></button>
+        <button class="btn-clear" id="route-clear">清除</button>
+      </div>
+      <div class="route-count" id="route-count">還沒選地點</div>
+    </div>
+  </section>`;
 }
 
 /* ---------- 互動 ---------- */
@@ -378,15 +440,18 @@ const toast = msg => {
 function bind(app, tripId) {
   // 分頁
   const show = idx => {
-    app.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', t.dataset.idx === idx));
+    app.querySelectorAll('.tab').forEach(t => {
+      t.setAttribute('aria-selected', t.dataset.idx === idx);
+      if (t.dataset.idx === idx) t.scrollIntoView({ block: 'nearest', inline: 'center' });
+    });
     app.querySelectorAll('.panel').forEach(d => d.classList.toggle('active', d.dataset.idx === idx));
-    history.replaceState(null, '', idx === 'o' ? '#o' : `#d${idx}`);
+    history.replaceState(null, '', idx === 'o' ? '#o' : idx === 'p' ? '#p' : `#d${idx}`);
   };
   app.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => show(t.dataset.idx)));
   const first = app.querySelector('.tab[aria-selected="true"]');
   if (first) show(first.dataset.idx);
   window.addEventListener('hashchange', () => {
-    const idx = location.hash === '#o' ? 'o' : (location.hash.match(/^#d(\d+)$/) || [])[1];
+    const idx = location.hash === '#o' ? 'o' : location.hash === '#p' ? 'p' : (location.hash.match(/^#d(\d+)$/) || [])[1];
     if (idx !== undefined && app.querySelector(`.panel[data-idx="${idx}"]`)) show(idx);
   });
 
@@ -407,6 +472,7 @@ function bind(app, tripId) {
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem(storeKey) || '{}'); } catch (e) {}
   app.querySelectorAll('.md li').forEach((li, i) => {
+    if (li.closest('ul.places')) return;
     const cb = li.querySelector(':scope > input[type=checkbox]');
     if (!cb) return;
     li.classList.add('task');
@@ -428,6 +494,32 @@ function bind(app, tripId) {
       try { localStorage.setItem(storeKey, JSON.stringify(saved)); } catch (e) {}
     });
   });
+
+  // 地點路線
+  const goBtn = document.getElementById('route-go');
+  if (goBtn) {
+    const boxes = [...app.querySelectorAll('ul.places input[type=checkbox]')];
+    const countEl = document.getElementById('route-count');
+    const order = [];
+    const refresh = () => {
+      boxes.forEach(b => { const i = order.indexOf(b); b.parentElement.querySelector('.ord').textContent = i >= 0 ? i + 1 : ''; });
+      goBtn.disabled = order.length < 2;
+      countEl.textContent = order.length ? `已選 ${order.length} 個地點${order.length > 10 ? '（Google Maps 最多 10 個，只會帶前 10 個）' : ''}` : '還沒選地點';
+    };
+    boxes.forEach(b => b.addEventListener('change', () => {
+      if (b.checked) order.push(b); else order.splice(order.indexOf(b), 1);
+      refresh();
+    }));
+    document.getElementById('route-clear').addEventListener('click', () => { boxes.forEach(b => b.checked = false); order.length = 0; refresh(); });
+    goBtn.addEventListener('click', () => {
+      const names = order.slice(0, 10).map(b => b.dataset.name);
+      const mode = (app.querySelector('input[name=mode]:checked') || {}).value || 'walking';
+      const q = encodeURIComponent;
+      const url = `https://www.google.com/maps/dir/?api=1&origin=${q(names[0])}&destination=${q(names[names.length - 1])}` +
+        (names.length > 2 ? `&waypoints=${names.slice(1, -1).map(q).join('|')}` : '') + `&travelmode=${mode}`;
+      window.open(url, '_blank', 'noopener');
+    });
+  }
 
   // 分享
   const share = document.getElementById('share');
